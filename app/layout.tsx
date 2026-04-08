@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JEF 2026 | Journée de l'Étudiant FLLAC",
-  description: "Rejoignez l'aventure JEF 2026. Excursion, culture et détente organisées par le BUE FLLAC.",
+  title: "JEF 2026 | BUE FLLAC",
+  description: "L'aventure continue ! 7 bus, une destination mystère, une ambiance légendaire. Génère ton visuel dès maintenant.",
+  openGraph: {
+    title: "JEF 2026 | BUE FLLAC",
+    description: "Rejoignez l'excursion la plus attendue de l'année.",
+    images: ['/og-image.png'],
+  },
 };
 
 export default function RootLayout({
