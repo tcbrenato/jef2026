@@ -13,8 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // Supprime l'alerte de métadonnées sur Netlify
-  metadataBase: new URL('https://jef2026.netlify.app'), 
+  metadataBase: new URL('https://jef2026.netlify.app'),
   
   title: "JEF 2026 | BUE FLLAC",
   description: "L'aventure continue ! 7 bus, une destination mystère, une ambiance légendaire. Génère ton visuel dès maintenant.",
@@ -24,10 +23,10 @@ export const metadata: Metadata = {
     description: "Rejoignez l'excursion la plus attendue de l'année.",
     images: [
       {
-        url: '/open.png',
+        url: '/open.png?v=2',
         width: 1200,
         height: 630,
-        alt: 'JEF 2026 - L\'aventure continue',
+        alt: "JEF 2026 - L'aventure continue",
       }
     ],
     type: 'website',
@@ -38,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "JEF 2026 | BUE FLLAC",
     description: "L'aventure continue !",
-    images: ['/open.png'],
+    images: ['/open.png?v=2'],
   },
 };
 
