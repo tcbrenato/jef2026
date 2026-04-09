@@ -2,9 +2,10 @@ import Header from '../components/layout/Header';
 import Hero from '../components/sections/Hero';
 import Concept from '../components/sections/Concept';
 import Flashback from '../components/sections/Flashback';
-import Team from '../components/sections/Team'; // Ne pas oublier le carrousel !
+import Team from '../components/sections/Team';
 import Inclus from '../components/sections/Inclus';
 import Testimonials from '../components/sections/Testimonials';
+import SocialProof from '../components/sections/SocialProof'; // 1. Import du nouveau composant
 import Countdown from '../components/sections/Countdown';
 import FinalCTA from '../components/sections/FinalCTA';
 import Footer from '../components/layout/Footer';
@@ -16,25 +17,22 @@ export default function Home() {
       <Header />
       <Hero />
       
-      {/* 1. On explique le concept juste après le Hero */}
       <FadeIn><Concept /></FadeIn>
       
-      {/* 2. On montre l'historique */}
       <FadeIn><Flashback /></FadeIn>
       
-      {/* 3. On présente l'équipe avec le carrousel défilant */}
       <FadeIn><Team /></FadeIn>
       
-      {/* 4. Le compte à rebours pour créer l'urgence */}
       <FadeIn><Countdown /></FadeIn>
       
-      {/* 5. Les détails logistiques */}
       <FadeIn><Inclus /></FadeIn>
       
-      {/* 6. La preuve sociale */}
+      {/* Preuve sociale : Témoignages des anciennes éditions */}
       <FadeIn><Testimonials /></FadeIn>
+
+      {/* 2. Nouveau : Mur des partants de CETTE édition (2026) */}
+      <FadeIn><SocialProof /></FadeIn>
       
-      {/* 7. L'appel à l'action final */}
       <FadeIn><FinalCTA /></FadeIn>
       
       <Footer />

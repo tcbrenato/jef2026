@@ -97,7 +97,7 @@ export default function JySerai() {
                           <path strokeLinecap="round" strokeWidth="2" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                         </svg>
                       </div>
-                      <span className="text-xs text-gray-400 font-bold">Clique pour ajouter ta photo</span>
+                      <span className="text-xs text-gray-400 font-bold">Clique pour alignésouter ta photo</span>
                       <span className="text-[10px] text-gray-300">JPG, PNG — photo portrait recommandée</span>
                     </div>
                   )}
