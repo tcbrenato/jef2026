@@ -6,12 +6,10 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 
 export default function JySerai() {
-  const [name, setName] = useState('VOTRE NOM');
-  const [dept, setDept] = useState('VOTRE FILIÈRE');
+  const [name, setName] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const flyerRef = useRef<HTMLDivElement>(null);
 
-  // Fonction pour charger l'image de l'étudiant
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -21,105 +19,207 @@ export default function JySerai() {
     }
   };
 
-  // Fonction pour télécharger le visuel
   const downloadVisuel = () => {
     if (flyerRef.current === null) return;
-    toPng(flyerRef.current, { cacheBust: true })
+    toPng(flyerRef.current, {
+      cacheBust: true,
+      pixelRatio: 3,
+      width: 500,
+      height: 500,
+    })
       .then((dataUrl) => {
         const link = document.createElement('a');
-        link.download = `jef2026-${name.toLowerCase()}.png`;
+        link.download = `jef2026-${(name || 'partant').toLowerCase().replace(/\s+/g, '-')}.png`;
         link.href = dataUrl;
         link.click();
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
   };
+
+  const displayName = name.trim() || 'Votre Nom';
 
   return (
     <main className="min-h-screen bg-gray-50">
       <Header />
-      
-      <div className="pt-32 pb-20 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        
-        {/* FORMULAIRE */}
-        <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl shadow-gray-200/50">
-          <h1 className="text-3xl font-black text-jef-dark uppercase mb-8">
-            Générer mon <span className="text-jef-green">Visuel</span>
+
+      <div className="pt-32 pb-20 max-w-6xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <div className="inline-block px-4 py-1.5 border border-jef-green/20 rounded-full bg-jef-green/5 mb-4">
+            <span className="text-jef-green text-[10px] font-black uppercase tracking-[0.4em]">Générateur de visuel</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-jef-dark uppercase leading-none tracking-tighter">
+            Je suis <span className="text-jef-green">Partant(e)</span>
           </h1>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Nom Complet</label>
-              <input 
-                type="text" 
-                onChange={(e) => setName(e.target.value.toUpperCase())}
-                placeholder="Ex: Jean KODJA"
-                className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-jef-green transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Filière / Fonction</label>
-              <input 
-                type="text" 
-                onChange={(e) => setDept(e.target.value.toUpperCase())}
-                placeholder="Ex: SLC - LICENCE 3"
-                className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-jef-green transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Ta Photo</label>
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:uppercase file:bg-jef-dark file:text-white hover:file:bg-jef-green transition-all"
-              />
-            </div>
+          <p className="text-gray-400 mt-3 text-sm">Génère ton visuel JEF 2026 et partage-le !</p>
+        </div>
 
-            <button 
-              onClick={downloadVisuel}
-              className="w-full py-5 bg-jef-red text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg shadow-jef-red/30 hover:scale-[1.02] transition-all pt-6"
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+
+          {/* FORMULAIRE */}
+          <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-100/80">
+            <h2 className="text-xl font-black text-jef-dark uppercase mb-8 tracking-tight">Personnalise ton flyer</h2>
+
+            <div className="space-y-6">
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
+                  Nom &amp; Prénom
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex : Rénato TCHOBO"
+                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-jef-dark font-bold focus:outline-none focus:ring-2 focus:ring-jef-green/40 transition-all placeholder:font-normal placeholder:text-gray-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
+                  Ta Photo
+                </label>
+                <label className="flex flex-col items-center justify-center w-full h-40 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-jef-green/40 hover:bg-jef-green/5 transition-all group">
+                  {image ? (
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden">
+                      <img src={image} alt="Aperçu" className="w-full h-full object-cover rounded-2xl" />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all rounded-2xl">
+                        <span className="text-white text-xs font-black uppercase tracking-widest">Changer</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="8" r="4" strokeWidth="2"/>
+                          <path strokeLinecap="round" strokeWidth="2" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        </svg>
+                      </div>
+                      <span className="text-xs text-gray-400 font-bold">Clique pour ajouter ta photo</span>
+                      <span className="text-[10px] text-gray-300">JPG, PNG — photo portrait recommandée</span>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                </label>
+              </div>
+
+              <button
+                onClick={downloadVisuel}
+                className="w-full py-5 bg-jef-dark text-white rounded-2xl font-black uppercase tracking-[0.15em] hover:bg-jef-green transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                ↓ Télécharger mon visuel
+              </button>
+
+              <p className="text-center text-[10px] text-gray-300 uppercase tracking-widest">
+                Format carré · Prêt pour Instagram &amp; WhatsApp
+              </p>
+            </div>
+          </div>
+
+          {/* APERÇU */}
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Aperçu en temps réel</p>
+
+            {/*
+              POSITIONS calées sur le template jeftcb1.png (3375×3375) rendu en 500×500 :
+              ┌─────────────────────────────────────────┐
+              │  [PHOTO]         [LOGO JEF]              │  ← photo : top 19% left 3% w 40% h 50%
+              │                  [PARTANT(E)]            │
+              │  [══════════ NOM ══════════]             │  ← nom   : top 73% left 2% right 4%
+              │  [logos]              [numéros]          │
+              └─────────────────────────────────────────┘
+            */}
+            <div
+              ref={flyerRef}
+              style={{
+                position: 'relative',
+                width: '500px',
+                height: '500px',
+                flexShrink: 0,
+                overflow: 'hidden',
+              }}
+              className="shadow-2xl"
             >
-              Télécharger mon visuel
-            </button>
-          </div>
-        </div>
+              {/* ① Fond = template vierge */}
+              <img
+                src="/jeftcb1.png"
+                alt="Template JEF 2026"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  zIndex: 0,
+                }}
+              />
 
-        {/* APERÇU DU VISUEL (Le flyer) */}
-        <div className="flex justify-center">
-          <div 
-            ref={flyerRef}
-            className="w-[400px] h-[500px] bg-jef-dark relative overflow-hidden shadow-2xl"
-          >
-            {/* Design du Flyer */}
-            <div className="absolute inset-0 bg-gradient-to-b from-jef-green/20 to-transparent z-10"></div>
-            
-            {/* Photo de l'étudiant */}
-            {image ? (
-              <img src={image} alt="Profil" className="absolute inset-0 w-full h-full object-cover" />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-white/10 font-black text-4xl text-center px-10 uppercase italic">
-                Ta photo <br/> ici
-              </div>
-            )}
+              {/* ② Photo utilisateur — superposée sur le cadre arrondi gauche */}
+              {image && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '19%',
+                    left: '3%',
+                    width: '40%',
+                    height: '50%',
+                    overflow: 'hidden',
+                    borderRadius: '18px',
+                    zIndex: 1,
+                  }}
+                >
+                  <img
+                    src={image}
+                    alt="Photo"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'top center',
+                    }}
+                  />
+                </div>
+              )}
 
-            {/* Overlays Texte */}
-            <div className="absolute bottom-0 left-0 w-full p-8 z-20 bg-gradient-to-t from-jef-dark via-jef-dark/80 to-transparent">
-              <div className="h-1 w-12 bg-jef-red mb-4"></div>
-              <h2 className="text-3xl font-black text-white leading-none mb-1">{name}</h2>
-              <p className="text-jef-green font-bold text-sm tracking-widest uppercase mb-6">{dept}</p>
-              
-              <div className="flex justify-between items-end">
-                <div className="text-white/50 text-[8px] font-bold uppercase tracking-[0.3em]">
-                  JEF 2026 <br/> Bureau d'Union d'Entité
-                </div>
-                <div className="text-white font-black text-xl italic uppercase">
-                  J'y <span className="text-jef-red">serai</span>
-                </div>
+              {/* ③ Nom — superposé sur le bandeau vert du bas */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '73%',
+                  left: '2%',
+                  right: '4%',
+                  height: '10%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span
+                  style={{
+                    color: 'white',
+                    fontSize: '23px',
+                    fontWeight: '900',
+                    fontFamily: '"Arial Black", Arial, sans-serif',
+                    letterSpacing: '1px',
+                    textAlign: 'center',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
+                  }}
+                >
+                  {displayName}
+                </span>
               </div>
             </div>
-          </div>
-        </div>
 
+            <p className="text-[10px] text-gray-300 text-center max-w-xs leading-relaxed">
+              Si la photo ou le nom ne sont pas bien alignés, dis-le moi et j'ajuste.
+            </p>
+          </div>
+
+        </div>
       </div>
 
       <Footer />
