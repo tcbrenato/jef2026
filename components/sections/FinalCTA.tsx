@@ -19,10 +19,11 @@ export default function FinalCTA() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/jy-serai" className="bg-white text-jef-dark px-10 py-4 rounded-full font-extrabold hover:bg-jef-green hover:text-white transition-all">
+              <Link href="/jy-serai" className="bg-white text-jef-dark px-10 py-4 rounded-full font-extrabold hover:bg-jef-green hover:text-white transition-all text-center">
                 GÉNÉRER MON VISUEL
               </Link>
-              <Link href="/achat" className="bg-jef-red text-white px-10 py-4 rounded-full font-extrabold hover:shadow-[0_0_20px_rgba(254,7,5,0.4)] transition-all">
+              {/* LIEN CORRIGÉ ICI : /achat devient /contact */}
+              <Link href="/contact" className="bg-jef-red text-white px-10 py-4 rounded-full font-extrabold hover:shadow-[0_0_20px_rgba(254,7,5,0.4)] transition-all text-center">
                 RÉSERVER MON TICKET
               </Link>
             </div>
