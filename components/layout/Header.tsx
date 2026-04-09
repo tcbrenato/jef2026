@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const x = useTransform(scrollYProgress, [0, 1], [0, 80]);
 
   const navLinks = [
     { name: 'Accueil', href: '/' },
@@ -14,74 +17,66 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+    <header className="fixed top-0 w-full z-[100] bg-white border-b border-gray-100 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Hauteur réduite : h-16 (64px) sur mobile, h-24 sur desktop */}
+        <div className="flex justify-between items-center h-16 md:h-24">
           
-          {/* LOGO CLIQUABLE */}
-          <Link href="/" className="flex items-center">
-            <img 
-              src="/logojeff.png" 
-              alt="Logo JEF 2026" 
-              className="h-14 w-auto object-contain py-1" 
-            />
+          {/* LOGO */}
+          <Link href="/" className="relative flex items-center">
+            <motion.div style={{ x }} className="relative">
+              <img 
+                src="/logojeff.png" 
+                alt="Logo JEF" 
+                className="h-10 md:h-16 w-auto object-contain" 
+              />
+            </motion.div>
           </Link>
 
           {/* DESKTOP NAV */}
-          <nav className="hidden md:flex space-x-8 items-center">
+          <nav className="hidden md:flex space-x-6 items-center">
             {navLinks.map((link) => (
               <Link 
                 key={link.name} 
                 href={link.href} 
-                className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-jef-green transition-colors"
+                className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-jef-green transition-colors"
               >
                 {link.name}
               </Link>
             ))}
             <Link 
               href="/contact" 
-              className="bg-jef-red text-white px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-jef-red/20 hover:scale-105 active:scale-95 transition-all"
+              className="bg-jef-red text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest"
             >
-              Prendre mon ticket
+              Tickets
             </Link>
           </nav>
 
-          {/* BOUTON MENU MOBILE */}
+          {/* MOBILE BUTTON */}
           <div className="md:hidden">
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 text-jef-dark"
-              aria-label="Toggle Menu"
-            >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-jef-dark">
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* OVERLAY MENU MOBILE (Mobile First) */}
+      {/* MOBILE MENU - S'ajuste au h-16 du header */}
       <div className={`
-        fixed inset-0 top-20 bg-white z-[90] transition-all duration-300 ease-in-out md:hidden
-        ${isOpen ? 'opacity-100 visible translate-x-0' : 'opacity-0 invisible translate-x-full'}
+        fixed inset-0 top-16 bg-white z-[110] transition-all duration-300 md:hidden
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
-        <nav className="flex flex-col p-8 space-y-8">
+        <nav className="flex flex-col p-6 space-y-6 text-center">
           {navLinks.map((link) => (
             <Link 
               key={link.name} 
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="text-3xl font-black uppercase tracking-tighter text-jef-dark border-b border-gray-50 pb-4"
+              className="text-2xl font-black uppercase text-jef-dark border-b border-gray-50 pb-4"
             >
               {link.name}
             </Link>
           ))}
-          <Link 
-            href="/contact"
-            onClick={() => setIsOpen(false)}
-            className="bg-jef-red text-white text-center py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-jef-red/20"
-          >
-            Prendre mon ticket
-          </Link>
         </nav>
       </div>
     </header>
