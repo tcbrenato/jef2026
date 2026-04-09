@@ -19,21 +19,25 @@ export default function JySerai() {
     }
   };
 
-  const downloadVisuel = () => {
+  // VERSION ROBUSTE DU TELECHARGEMENT
+  const downloadVisuel = async () => {
     if (flyerRef.current === null) return;
-    toPng(flyerRef.current, {
-      cacheBust: true,
-      pixelRatio: 3,
-      width: 500,
-      height: 500,
-    })
-      .then((dataUrl) => {
-        const link = document.createElement('a');
-        link.download = `jef2026-${(name || 'partant').toLowerCase().replace(/\s+/g, '-')}.png`;
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => console.error(err));
+    
+    try {
+      const dataUrl = await toPng(flyerRef.current, {
+        cacheBust: true,
+        pixelRatio: 3,
+        width: 500,
+        height: 500,
+      });
+
+      const link = document.createElement('a');
+      link.download = `jef2026-${(name || 'partant').toLowerCase().replace(/\s+/g, '-')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Erreur lors de la génération :", err);
+    }
   };
 
   const displayName = name.trim() || 'Votre Nom';
@@ -55,12 +59,11 @@ export default function JySerai() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-          {/* FORMULAIRE */}
+          {/* FORMULAIRE - TA STRUCTURE ORIGINALE CONSERVÉE */}
           <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-100/80">
             <h2 className="text-xl font-black text-jef-dark uppercase mb-8 tracking-tight">Personnalise ton flyer</h2>
 
             <div className="space-y-6">
-
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
                   Nom &amp; Prénom
@@ -115,19 +118,10 @@ export default function JySerai() {
             </div>
           </div>
 
-          {/* APERÇU */}
+          {/* APERÇU - TES POSITIONS PRÉCISES */}
           <div className="flex flex-col items-center gap-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Aperçu en temps réel</p>
 
-            {/*
-              POSITIONS calées sur le template jeftcb1.png (3375×3375) rendu en 500×500 :
-              ┌─────────────────────────────────────────┐
-              │  [PHOTO]         [LOGO JEF]              │  ← photo : top 19% left 3% w 40% h 50%
-              │                  [PARTANT(E)]            │
-              │  [══════════ NOM ══════════]             │  ← nom   : top 73% left 2% right 4%
-              │  [logos]              [numéros]          │
-              └─────────────────────────────────────────┘
-            */}
             <div
               ref={flyerRef}
               style={{
@@ -136,10 +130,11 @@ export default function JySerai() {
                 height: '500px',
                 flexShrink: 0,
                 overflow: 'hidden',
+                backgroundColor: 'white'
               }}
               className="shadow-2xl"
             >
-              {/* ① Fond = template vierge */}
+              {/* ① Fond */}
               <img
                 src="/jeftcb1.png"
                 alt="Template JEF 2026"
@@ -153,7 +148,7 @@ export default function JySerai() {
                 }}
               />
 
-              {/* ② Photo utilisateur — superposée sur le cadre arrondi gauche */}
+              {/* ② Photo (Calée sur tes mesures) */}
               {image && (
                 <div
                   style={{
@@ -180,7 +175,7 @@ export default function JySerai() {
                 </div>
               )}
 
-              {/* ③ Nom — superposé sur le bandeau vert du bas */}
+              {/* ③ Nom (Calé sur tes mesures) */}
               <div
                 style={{
                   position: 'absolute',
@@ -213,12 +208,7 @@ export default function JySerai() {
                 </span>
               </div>
             </div>
-
-            <p className="text-[10px] text-gray-300 text-center max-w-xs leading-relaxed">
-              Si la photo ou le nom ne sont pas bien alignés, dis-le moi et j'ajuste.
-            </p>
           </div>
-
         </div>
       </div>
 
