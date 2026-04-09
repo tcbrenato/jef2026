@@ -13,16 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Supprime l'alerte de métadonnées sur Netlify
   metadataBase: new URL('https://jef2026.netlify.app'), 
   
   title: "JEF 2026 | BUE FLLAC",
   description: "L'aventure continue ! 7 bus, une destination mystère, une ambiance légendaire. Génère ton visuel dès maintenant.",
   
-  icons: {
-    icon: '/logojeff.png',
-    shortcut: '/logojeff.png',
-    apple: '/logojeff.png',
-  },
+  // NOTE : On ne met pas de section "icons" ici. 
+  // Next.js détectera automatiquement le fichier /app/icon.png ou /public/favicon.ico
 
   openGraph: {
     title: "JEF 2026 | BUE FLLAC",
@@ -39,7 +37,6 @@ export const metadata: Metadata = {
   },
 };
 
-// C'est cette partie "export default" qui manquait peut-être de clarté pour Next.js
 export default function RootLayout({
   children,
 }: Readonly<{
