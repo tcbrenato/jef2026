@@ -5,16 +5,16 @@ import { Quote } from 'lucide-react';
 export default function Testimonials() {
   const reviews = [
     {
-      name: "Marcelle A.",
+      name: "Marcelle",
       role: "Étudiante FLLAC",
       text: "L'édition à Lomé était juste incroyable. L'organisation était au top du début à la fin !",
-      img: "https://i.pravatar.cc/150?u=marcelle"
+      img: "/marcelle.png"
     },
     {
-      name: "Jean-Pierre K.",
+      name: "Marie DAGBEGNON",
       role: "Alumni",
       text: "C'est ma 3ème JEF et je ne m'en lasse pas. La destination mystère, c'est le meilleur concept.",
-      img: "https://i.pravatar.cc/150?u=jp"
+      img: "/marie.png"
     }
   ];
 
