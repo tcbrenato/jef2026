@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toPng } from 'html-to-image';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -19,31 +19,35 @@ export default function JySerai() {
     }
   };
 
-  // VERSION ROBUSTE DU TELECHARGEMENT
   const downloadVisuel = async () => {
     if (flyerRef.current === null) return;
     
     try {
+      // Version optimisée pour mobile
       const dataUrl = await toPng(flyerRef.current, {
         cacheBust: true,
-        pixelRatio: 3,
-        width: 500,
-        height: 500,
+        pixelRatio: 2,
+        skipFonts: false,
       });
 
       const link = document.createElement('a');
       link.download = `jef2026-${(name || 'partant').toLowerCase().replace(/\s+/g, '-')}.png`;
       link.href = dataUrl;
+      
+      // Obligatoire pour le bon fonctionnement sur certains navigateurs mobiles
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
       console.error("Erreur lors de la génération :", err);
+      alert("Erreur de téléchargement. Sur mobile, vous pouvez aussi faire un appui long sur l'image pour l'enregistrer.");
     }
   };
 
   const displayName = name.trim() || 'Votre Nom';
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
 
       <div className="pt-32 pb-20 max-w-6xl mx-auto px-6">
@@ -59,8 +63,8 @@ export default function JySerai() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-          {/* FORMULAIRE - TA STRUCTURE ORIGINALE CONSERVÉE */}
-          <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-100/80">
+          {/* FORMULAIRE */}
+          <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-100/80 order-2 lg:order-1">
             <h2 className="text-xl font-black text-jef-dark uppercase mb-8 tracking-tight">Personnalise ton flyer</h2>
 
             <div className="space-y-6">
@@ -97,8 +101,8 @@ export default function JySerai() {
                           <path strokeLinecap="round" strokeWidth="2" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                         </svg>
                       </div>
-                      <span className="text-xs text-gray-400 font-bold">Clique pour alignésouter ta photo</span>
-                      <span className="text-[10px] text-gray-300">JPG, PNG — photo portrait recommandée</span>
+                      <span className="text-xs text-gray-400 font-bold">Clique pour ajouter ta photo</span>
+                      <span className="text-[10px] text-gray-300">JPG, PNG — Portrait recommandé</span>
                     </div>
                   )}
                   <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
@@ -118,97 +122,101 @@ export default function JySerai() {
             </div>
           </div>
 
-          {/* APERÇU - TES POSITIONS PRÉCISES */}
-          <div className="flex flex-col items-center gap-4">
+          {/* APERÇU AVEC FIX MOBILE */}
+          <div className="flex flex-col items-center gap-4 order-1 lg:order-2 w-full">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Aperçu en temps réel</p>
 
-            <div
-              ref={flyerRef}
-              style={{
-                position: 'relative',
-                width: '500px',
-                height: '500px',
-                flexShrink: 0,
-                overflow: 'hidden',
-                backgroundColor: 'white'
-              }}
-              className="shadow-2xl"
-            >
-              {/* ① Fond */}
-              <img
-                src="/jeftcb1.png"
-                alt="Template JEF 2026"
+            <div className="w-full flex justify-center items-start min-h-[350px] md:min-h-[500px]">
+              <div
+                ref={flyerRef}
                 style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  zIndex: 0,
+                  position: 'relative',
+                  width: '500px',
+                  height: '500px',
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                  backgroundColor: 'white',
+                  transformOrigin: 'top center',
                 }}
-              />
+                className="shadow-2xl scale-[0.6] xs:scale-[0.7] sm:scale-[0.8] md:scale-100"
+              >
+                {/* ① Fond */}
+                <img
+                  src="/jeftcb1.png"
+                  alt="Template JEF 2026"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    zIndex: 0,
+                  }}
+                />
 
-              {/* ② Photo (Calée sur tes mesures) */}
-              {image && (
+                {/* ② Photo */}
+                {image && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '19.2%',
+                      left: '3.4%',
+                      width: '39.8%',
+                      height: '50%',
+                      overflow: 'hidden',
+                      borderRadius: '18px',
+                      zIndex: 1,
+                    }}
+                  >
+                    <img
+                      src={image}
+                      alt="Photo"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'top center',
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* ③ Nom */}
                 <div
                   style={{
                     position: 'absolute',
-                    top: '19%',
-                    left: '3%',
-                    width: '40%',
-                    height: '50%',
-                    overflow: 'hidden',
-                    borderRadius: '18px',
-                    zIndex: 1,
+                    top: '73%',
+                    left: '2%',
+                    right: '4%',
+                    height: '10%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2,
                   }}
                 >
-                  <img
-                    src={image}
-                    alt="Photo"
+                  <span
                     style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'top center',
+                      color: 'white',
+                      fontSize: '23px',
+                      fontWeight: '900',
+                      fontFamily: 'Arial Black, sans-serif',
+                      letterSpacing: '1px',
+                      textAlign: 'center',
+                      textTransform: 'uppercase',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '100%',
                     }}
-                  />
+                  >
+                    {displayName}
+                  </span>
                 </div>
-              )}
-
-              {/* ③ Nom (Calé sur tes mesures) */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '73%',
-                  left: '2%',
-                  right: '4%',
-                  height: '10%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 2,
-                }}
-              >
-                <span
-                  style={{
-                    color: 'white',
-                    fontSize: '23px',
-                    fontWeight: '900',
-                    fontFamily: '"Arial Black", Arial, sans-serif',
-                    letterSpacing: '1px',
-                    textAlign: 'center',
-                    textTransform: 'uppercase',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '100%',
-                  }}
-                >
-                  {displayName}
-                </span>
               </div>
             </div>
           </div>
+          
         </div>
       </div>
 
