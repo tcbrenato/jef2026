@@ -11,7 +11,7 @@ export default function Hero() {
   const heroImages = [
     '/hero1.png', '/hero2.png', '/hero3.png', '/hero4.png', '/hero5.png',
     '/hero6.png', '/hero7.png', '/hero8.png', '/hero9.png', '/hero10.png',
-    '/hero11.png', '/hero12.png'
+    '/hero11.png', '/hero12.png', '/hero13.png', '/hero14.png'
   ];
 
   return (
