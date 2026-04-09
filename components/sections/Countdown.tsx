@@ -9,7 +9,7 @@ export default function Countdown() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 relative z-10 w-full">
-        {/* Centrage forcé du conteneur parent */}
+        {/* Centrage vertical et horizontal pour mobile */}
         <div className="flex flex-col items-center justify-center text-center w-full">
           
           <div className="inline-block px-6 py-2 bg-jef-red text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-full mb-8 shadow-lg shadow-jef-red/20">
@@ -21,12 +21,12 @@ export default function Countdown() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-jef-green to-white">dévoilée bientôt</span>
           </h3>
 
-          {/* GRID : justify-items-center pour forcer chaque carte au milieu de sa colonne */}
+          {/* GRID : 2 colonnes sur mobile, bien centrées grâce à justify-items-center */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mb-12 justify-center justify-items-center">
             {['??', '??', '??', '??'].map((unit, i) => (
               <div 
                 key={i} 
-                className="bg-white/5 border border-white/10 w-full max-w-[160px] p-6 md:p-8 rounded-3xl backdrop-blur-md flex flex-col items-center justify-center group hover:border-jef-green/50 transition-colors"
+                className="bg-white/5 border border-white/10 w-full aspect-square max-w-[140px] md:max-w-none md:aspect-auto md:p-8 rounded-3xl backdrop-blur-md flex flex-col items-center justify-center group hover:border-jef-green/50 transition-colors"
               >
                 <span className="block text-4xl md:text-5xl font-black text-white mb-1 group-hover:scale-110 transition-transform">
                   {unit}
@@ -38,7 +38,7 @@ export default function Countdown() {
             ))}
           </div>
 
-          <p className="text-gray-400 text-base md:text-lg italic max-w-2xl leading-relaxed mx-auto">
+          <p className="text-gray-400 text-sm md:text-lg italic max-w-2xl leading-relaxed mx-auto">
             "Préparez vos sacs, l'édition 2026 va dépasser toutes vos attentes."
           </p>
         </div>

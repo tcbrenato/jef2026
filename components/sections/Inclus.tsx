@@ -1,50 +1,47 @@
+'use client';
+
+import { CheckCircle2 } from 'lucide-react';
+
 export default function Inclus() {
-  const services = [
-    {
-      title: "Transport AR",
-      desc: "Voyage en convoi sécurisé dans des bus grand confort (7 bus minimum).",
-      icon: "🚌"
-    },
-    {
-      title: "Sites Touristiques",
-      desc: "Accès et visites guidées des lieux historiques et culturels de la destination.",
-      icon: "🏛️"
-    },
-    {
-      title: "Ambiance & Fun",
-      desc: "Animation DJ, jeux, et moments de détente 'enjaillement' à la plage.",
-      icon: "🎉"
-    },
-    {
-      title: "Sécurité",
-      desc: "Une organisation rigoureuse par le BUE FLLAC pour votre tranquillité.",
-      icon: "🛡️"
-    }
+  const items = [
+    { title: "Transport VIP", desc: "7 Bus climatisés" },
+    { title: "Restauration", desc: "Buffet complet & Boissons" },
+    { title: "Kit Participant", desc: "T-shirt & Gadgets" },
+    { title: "Sécurité", desc: "Assistance médicale 24h" }
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-20 bg-gray-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-jef-red font-black text-sm uppercase tracking-[0.3em] mb-2">Tout compris</h2>
-          <h3 className="text-4xl md:text-5xl font-black text-jef-dark uppercase">Dans votre ticket</h3>
+        
+        {/* EN-TÊTE : Centré sur mobile */}
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left mb-16">
+          <h2 className="text-jef-green text-[10px] font-black uppercase tracking-[0.4em] mb-4">
+            Tout est prévu
+          </h2>
+          <h3 className="text-4xl md:text-6xl font-black text-jef-dark uppercase tracking-tighter">
+            Ce qui est <span className="text-jef-green">inclus</span>
+          </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {services.map((service, index) => (
-            <div key={index} className="bg-gray-50 p-10 rounded-[2rem] border border-transparent hover:border-jef-red/10 transition-all hover:shadow-xl hover:shadow-jef-red/5 text-center">
-              <div className="text-5xl mb-6">{service.icon}</div>
-              <h4 className="text-xl font-bold text-jef-dark mb-4">{service.title}</h4>
-              <p className="text-gray-500 text-sm leading-relaxed">{service.desc}</p>
+        {/* GRILLE : justify-items-center pour le centrage mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
+          {items.map((item, index) => (
+            <div 
+              key={index} 
+              className="flex flex-col items-center text-center lg:items-start lg:text-left space-y-4 w-full max-w-[280px]"
+            >
+              <div className="bg-jef-green/10 p-4 rounded-2xl">
+                <CheckCircle2 className="w-8 h-8 text-jef-green" />
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-jef-dark uppercase">{item.title}</h4>
+                <p className="text-gray-500 text-sm font-medium">{item.desc}</p>
+              </div>
             </div>
           ))}
         </div>
-        
-        <div className="mt-16 p-8 bg-jef-green/5 rounded-3xl border border-jef-green/10 text-center">
-          <p className="text-jef-green font-bold italic">
-            "Le prix du ticket est calculé pour être accessible à tous les étudiants de la FLLAC."
-          </p>
-        </div>
+
       </div>
     </section>
   );
