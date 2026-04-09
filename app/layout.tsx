@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     description: "Rejoignez l'excursion la plus attendue de l'année.",
     images: [
       {
-        url: '/open.png?v=2',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: "JEF 2026 - L'aventure continue",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "JEF 2026 | BUE FLLAC",
     description: "L'aventure continue !",
-    images: ['/open.png?v=2'],
+    images: ['/og-image.png'],
   },
 };
 
