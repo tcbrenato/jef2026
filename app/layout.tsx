@@ -19,21 +19,26 @@ export const metadata: Metadata = {
   title: "JEF 2026 | BUE FLLAC",
   description: "L'aventure continue ! 7 bus, une destination mystère, une ambiance légendaire. Génère ton visuel dès maintenant.",
   
-  // NOTE : On ne met pas de section "icons" ici. 
-  // Next.js détectera automatiquement le fichier /app/icon.png ou /public/favicon.ico
-
   openGraph: {
     title: "JEF 2026 | BUE FLLAC",
     description: "Rejoignez l'excursion la plus attendue de l'année.",
-    images: ['/logojeff.png'],
+    images: [
+      {
+        url: '/open.png',
+        width: 1200,
+        height: 630,
+        alt: 'JEF 2026 - L\'aventure continue',
+      }
+    ],
     type: 'website',
+    url: 'https://jef2026.netlify.app',
   },
   
   twitter: {
     card: 'summary_large_image',
     title: "JEF 2026 | BUE FLLAC",
     description: "L'aventure continue !",
-    images: ['/logojeff.png'],
+    images: ['/open.png'],
   },
 };
 
