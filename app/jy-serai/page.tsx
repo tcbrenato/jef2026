@@ -1,41 +1,35 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+import { supabase } from '../../lib/supabase';
 
 function isIOS() {
   if (typeof navigator === 'undefined') return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 
-const FILIERES = [
-  'DSLC',
-  'Anglais',
-  'Allemand',
-  'Lettres Modernes',
-  'Espagnol',
-  'Autres',
-];
+const FILIERES = ['DSLC', 'Anglais', 'Allemand', 'Lettres Modernes', 'Espagnol', 'Autres'];
 
 const TEMPLATES = [
-  { id: 1, file: '/templatejef1.png', label: 'Fond Vert', textColor: '#FFFFFF' },
-  { id: 2, file: '/templatejef2.png', label: 'Fond Blanc', textColor: '#2f8b09' },
+  { id: 1, file: '/templatejef1.png', label: 'Fond Vert',   textColor: '#FFFFFF' },
+  { id: 2, file: '/templatejef2.png', label: 'Fond Blanc',  textColor: '#2f8b09' },
 ];
 
-// Canva donne X/Y en coin sup gauche sur 1800x1800
-const PHOTO = { x: 71.1,   y: 526.5,  w: 747,   h: 747   };
-const FILIERE_BOX = { x: 218.5, y: 1424.4, w: 356.8, h: 69.1  };
-const NOM_BOX    = { x: 692.3, y: 1410.4, w: 820.2, h: 97.1  };
+const PHOTO       = { x: 71.1,  y: 526.5,  w: 747,   h: 747  };
+const FILIERE_BOX = { x: 218.5, y: 1424.4, w: 356.8, h: 69.1 };
+const NOM_BOX     = { x: 692.3, y: 1410.4, w: 820.2, h: 97.1 };
 
 export default function JySerai() {
-  const [name, setName]               = useState('');
-  const [filiere, setFiliere]         = useState('');
-  const [filiereCustom, setFiliereCustom] = useState('');
-  const [image, setImage]             = useState<string | null>(null);
-  const [templateId, setTemplateId]   = useState(1);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [name, setName]                     = useState('');
+  const [filiere, setFiliere]               = useState('');
+  const [filiereCustom, setFiliereCustom]   = useState('');
+  const [image, setImage]                   = useState<string | null>(null);
+  const [templateId, setTemplateId]         = useState(1);
+  const [isGenerating, setIsGenerating]     = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [saved, setSaved]                   = useState(false);
 
   const activeTemplate = TEMPLATES.find(t => t.id === templateId)!;
 
@@ -46,6 +40,7 @@ export default function JySerai() {
       reader.onloadend = () => {
         setImage(reader.result as string);
         setGeneratedImage(null);
+        setSaved(false);
       };
       reader.readAsDataURL(file);
     }
@@ -69,81 +64,104 @@ export default function JySerai() {
         new Promise((res, rej) => {
           const img = new Image();
           img.crossOrigin = 'anonymous';
-          img.onload = () => res(img);
+          img.onload  = () => res(img);
           img.onerror = rej;
           img.src = src;
         });
 
-      // 1. Template de fond
       const bg = await loadImage(activeTemplate.file);
       ctx.drawImage(bg, 0, 0, SIZE, SIZE);
 
-      // 2. Photo en cercle
       if (image) {
         const { x, y, w, h } = PHOTO;
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        const r  = Math.min(w, h) / 2;
-
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.arc(x + w / 2, y + h / 2, Math.min(w, h) / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-
         const photo = await loadImage(image);
-        const photoAspect = photo.naturalWidth / photo.naturalHeight;
-        const zoneAspect  = w / h;
+        const pa = photo.naturalWidth / photo.naturalHeight;
+        const za = w / h;
         let sx = 0, sy = 0, sw = photo.naturalWidth, sh = photo.naturalHeight;
-        if (photoAspect > zoneAspect) {
-          sw = photo.naturalHeight * zoneAspect;
-          sx = (photo.naturalWidth - sw) / 2;
-        } else {
-          sh = photo.naturalWidth / zoneAspect;
-          sy = 0;
-        }
+        if (pa > za) { sw = photo.naturalHeight * za; sx = (photo.naturalWidth - sw) / 2; }
+        else         { sh = photo.naturalWidth / za;  sy = 0; }
         ctx.drawImage(photo, sx, sy, sw, sh, x, y, w, h);
         ctx.restore();
       }
 
       const textColor = activeTemplate.textColor;
-
-      // 3. Filière
       const filiereLabel = getFiliereLabel();
+
       if (filiereLabel) {
         const { x, y, w, h } = FILIERE_BOX;
         ctx.save();
         ctx.fillStyle = textColor;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        let fontSize = Math.round(h * 0.75);
-        ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-        while (ctx.measureText(filiereLabel).width > w - 10 && fontSize > 12) {
-          fontSize -= 1;
-          ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+        let fs = Math.round(h * 0.75);
+        ctx.font = `900 ${fs}px "Arial Black", Arial, sans-serif`;
+        while (ctx.measureText(filiereLabel).width > w - 10 && fs > 12) {
+          fs--;
+          ctx.font = `900 ${fs}px "Arial Black", Arial, sans-serif`;
         }
         ctx.fillText(filiereLabel, x, y + h / 2);
         ctx.restore();
       }
 
-      // 4. Nom
       const displayName = name.trim().toUpperCase() || 'VOTRE NOM';
       const { x: nx, y: ny, w: nw, h: nh } = NOM_BOX;
       ctx.save();
       ctx.fillStyle = textColor;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      let nameFontSize = Math.round(nh * 0.8);
-      ctx.font = `900 ${nameFontSize}px "Arial Black", Arial, sans-serif`;
-      while (ctx.measureText(displayName).width > nw - 10 && nameFontSize > 12) {
-        nameFontSize -= 1;
-        ctx.font = `900 ${nameFontSize}px "Arial Black", Arial, sans-serif`;
+      let nfs = Math.round(nh * 0.8);
+      ctx.font = `900 ${nfs}px "Arial Black", Arial, sans-serif`;
+      while (ctx.measureText(displayName).width > nw - 10 && nfs > 12) {
+        nfs--;
+        ctx.font = `900 ${nfs}px "Arial Black", Arial, sans-serif`;
       }
       ctx.fillText(displayName, nx, ny + nh / 2);
       ctx.restore();
 
       resolve(canvas);
     });
+  };
+
+  const saveToSupabase = async (blob: Blob, fileName: string) => {
+    try {
+      // 1. Upload photo originale dans le bucket gallery
+      let photoUrl: string | null = null;
+      if (image) {
+        // Convertir base64 en blob pour upload de la photo de profil
+        const res = await fetch(image);
+        const photoBlob = await res.blob();
+        const photoFileName = fileName.replace('.png', '-photo.jpg');
+        const { error: uploadError } = await supabase.storage
+          .from('gallery')
+          .upload(photoFileName, photoBlob, { contentType: 'image/jpeg', upsert: false });
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(photoFileName);
+          photoUrl = urlData.publicUrl;
+        }
+      }
+
+      // 2. Upload du visuel généré
+      await supabase.storage
+        .from('gallery')
+        .upload(fileName, blob, { contentType: 'image/png', upsert: false });
+
+      // 3. Insérer dans la table participants
+      await supabase.from('participants').insert({
+        name: name.trim() || 'Anonyme',
+        filiere: getFiliereLabel(),
+        photo_url: photoUrl,
+      });
+
+      setSaved(true);
+    } catch (err) {
+      console.error('Erreur Supabase :', err);
+    }
   };
 
   const downloadVisuel = async () => {
@@ -153,38 +171,38 @@ export default function JySerai() {
 
     try {
       const canvas = await generateCanvas();
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
-      const fileName = `jef2026-${(name.trim() || 'partant').toLowerCase().replace(/\s+/g, '-')}.png`;
+      const safeName = (name.trim() || 'partant').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const fileName = `jef2026-${safeName}-${Date.now()}.png`;
 
-      if (isIOS()) {
-        setGeneratedImage(dataUrl);
-      } else {
-        canvas.toBlob((blob) => {
-          if (!blob) return;
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+
+        // Sauvegarde Supabase en arrière-plan
+        saveToSupabase(blob, fileName);
+
+        if (isIOS()) {
+          setGeneratedImage(canvas.toDataURL('image/png', 1.0));
+        } else {
           const blobUrl = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = blobUrl;
           a.download = fileName;
           document.body.appendChild(a);
           a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-          }, 2000);
-        }, 'image/png', 1.0);
-      }
+          setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 2000);
+        }
+      }, 'image/png', 1.0);
+
     } catch (err) {
-      console.error('Erreur lors de la génération :', err);
-      alert("Erreur de génération. Réessaie ou fais un appui long sur l'aperçu.");
+      console.error('Erreur :', err);
+      alert("Erreur de génération. Réessaie.");
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Aperçu live — scale depuis 1800 vers la largeur d'affichage
   const PREVIEW_SIZE = 500;
   const scale = PREVIEW_SIZE / 1800;
-
   const displayName = name.trim().toUpperCase() || 'VOTRE NOM';
   const filiereDisplay = getFiliereLabel();
   const textColor = activeTemplate.textColor;
@@ -212,16 +230,14 @@ export default function JySerai() {
 
             <div className="space-y-6">
 
-              {/* Choix du template */}
+              {/* Templates */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-3">
-                  Choisis ton design
-                </label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-3">Choisis ton design</label>
                 <div className="grid grid-cols-2 gap-3">
                   {TEMPLATES.map((t) => (
                     <button
                       key={t.id}
-                      onClick={() => { setTemplateId(t.id); setGeneratedImage(null); }}
+                      onClick={() => { setTemplateId(t.id); setGeneratedImage(null); setSaved(false); }}
                       className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
                         templateId === t.id
                           ? 'border-jef-green shadow-lg shadow-jef-green/20 scale-[1.02]'
@@ -246,9 +262,7 @@ export default function JySerai() {
 
               {/* Nom */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
-                  Nom &amp; Prénom
-                </label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">Nom &amp; Prénom</label>
                 <input
                   type="text"
                   value={name}
@@ -260,9 +274,7 @@ export default function JySerai() {
 
               {/* Filière */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
-                  Filière
-                </label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">Filière</label>
                 <select
                   value={filiere}
                   onChange={(e) => setFiliere(e.target.value)}
@@ -286,9 +298,7 @@ export default function JySerai() {
 
               {/* Photo */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
-                  Ta Photo
-                </label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">Ta Photo</label>
                 <label className="flex flex-col items-center justify-center w-full h-40 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-jef-green/40 hover:bg-jef-green/5 transition-all group">
                   {image ? (
                     <div className="relative w-full h-full rounded-2xl overflow-hidden">
@@ -313,7 +323,7 @@ export default function JySerai() {
                 </label>
               </div>
 
-              {/* Bouton télécharger */}
+              {/* Bouton */}
               <button
                 onClick={downloadVisuel}
                 disabled={isGenerating}
@@ -321,6 +331,21 @@ export default function JySerai() {
               >
                 {isGenerating ? '⏳ Génération en cours...' : '↓ Télécharger mon visuel'}
               </button>
+
+              {/* Confirmation */}
+              {saved && (
+                <div className="flex items-center gap-3 p-4 bg-jef-green/10 border border-jef-green/20 rounded-2xl">
+                  <div className="w-8 h-8 bg-jef-green rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-jef-green text-xs font-black uppercase tracking-widest">Tu es dans la galerie !</p>
+                    <p className="text-[10px] text-gray-400">Ton nom apparaît maintenant dans la section communauté.</p>
+                  </div>
+                </div>
+              )}
 
               {/* Zone iOS */}
               {generatedImage && (
@@ -346,7 +371,6 @@ export default function JySerai() {
           {/* APERÇU LIVE */}
           <div className="flex flex-col items-center gap-4 order-1 lg:order-2 w-full">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Aperçu en temps réel</p>
-
             <div className="w-full flex justify-center items-start">
               <div
                 style={{
@@ -360,14 +384,7 @@ export default function JySerai() {
                 }}
                 className="shadow-2xl scale-[0.6] xs:scale-[0.7] sm:scale-[0.8] md:scale-100"
               >
-                {/* Template */}
-                <img
-                  src={activeTemplate.file}
-                  alt="Template"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
-                />
-
-                {/* Photo en cercle */}
+                <img src={activeTemplate.file} alt="Template" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
                 {image && (
                   <div style={{
                     position: 'absolute',
@@ -382,8 +399,6 @@ export default function JySerai() {
                     <img src={image} alt="Photo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
                   </div>
                 )}
-
-                {/* Filière */}
                 {filiereDisplay && (
                   <div style={{
                     position: 'absolute',
@@ -395,22 +410,11 @@ export default function JySerai() {
                     alignItems: 'center',
                     zIndex: 2,
                   }}>
-                    <span style={{
-                      color: textColor,
-                      fontSize: `${FILIERE_BOX.h * scale * 0.75}px`,
-                      fontWeight: '900',
-                      fontFamily: '"Arial Black", Arial, sans-serif',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: '100%',
-                    }}>
+                    <span style={{ color: textColor, fontSize: `${FILIERE_BOX.h * scale * 0.75}px`, fontWeight: '900', fontFamily: '"Arial Black", Arial, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                       {filiereDisplay}
                     </span>
                   </div>
                 )}
-
-                {/* Nom */}
                 <div style={{
                   position: 'absolute',
                   left: `${NOM_BOX.x * scale}px`,
@@ -421,20 +425,10 @@ export default function JySerai() {
                   alignItems: 'center',
                   zIndex: 2,
                 }}>
-                  <span style={{
-                    color: textColor,
-                    fontSize: `${NOM_BOX.h * scale * 0.8}px`,
-                    fontWeight: '900',
-                    fontFamily: '"Arial Black", Arial, sans-serif',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '100%',
-                  }}>
+                  <span style={{ color: textColor, fontSize: `${NOM_BOX.h * scale * 0.8}px`, fontWeight: '900', fontFamily: '"Arial Black", Arial, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                     {displayName}
                   </span>
                 </div>
-
               </div>
             </div>
           </div>
