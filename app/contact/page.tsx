@@ -80,7 +80,7 @@ export default function Contact() {
             </div>
 
             {/* WhatsApp */}
-            <div className="p-8 bg-[#f0fdf4] rounded-[2rem] border border-green-100">
+            <div className="p-8 bg-[#f0fdf4] rounded-[2rem] border border-green-100 mb-6">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 bg-[#25D366] rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -107,6 +107,34 @@ export default function Contact() {
                 ))}
               </div>
             </div>
+
+            {/* Vérification de ticket */}
+            <div className="p-8 bg-jef-dark rounded-[2rem] border border-white/10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-jef-green/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-jef-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Authenticité</span>
+              </div>
+              <h3 className="text-lg font-black text-white uppercase mb-2">Vérifier mon ticket</h3>
+              <p className="text-gray-400 text-sm mb-5">
+                Vous avez reçu un ticket ? Vérifiez son authenticité en tapant votre numéro de ticket sur notre plateforme officielle.
+              </p>
+              <a
+                href="https://jef-logistique.vercel.app/verify"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 bg-jef-green text-white rounded-xl font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Vérifier mon ticket
+              </a>
+            </div>
+
           </div>
 
           {/* DROITE : FORMULAIRE */}
