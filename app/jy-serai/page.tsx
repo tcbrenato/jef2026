@@ -4,18 +4,40 @@ import { useState, useRef } from 'react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 
-// Détecte iOS (iPhone/iPad)
 function isIOS() {
   if (typeof navigator === 'undefined') return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 
+const FILIERES = [
+  'DSLC',
+  'Anglais',
+  'Allemand',
+  'Lettres Modernes',
+  'Espagnol',
+  'Autres',
+];
+
+const TEMPLATES = [
+  { id: 1, file: '/templatejef1.png', label: 'Fond Vert', textColor: '#FFFFFF' },
+  { id: 2, file: '/templatejef2.png', label: 'Fond Blanc', textColor: '#2f8b09' },
+];
+
+// Canva donne X/Y en coin sup gauche sur 1800x1800
+const PHOTO = { x: 71.1,   y: 526.5,  w: 747,   h: 747   };
+const FILIERE_BOX = { x: 218.5, y: 1424.4, w: 356.8, h: 69.1  };
+const NOM_BOX    = { x: 692.3, y: 1410.4, w: 820.2, h: 97.1  };
+
 export default function JySerai() {
-  const [name, setName] = useState('');
-  const [image, setImage] = useState<string | null>(null);
+  const [name, setName]               = useState('');
+  const [filiere, setFiliere]         = useState('');
+  const [filiereCustom, setFiliereCustom] = useState('');
+  const [image, setImage]             = useState<string | null>(null);
+  const [templateId, setTemplateId]   = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const flyerRef = useRef<HTMLDivElement>(null);
+
+  const activeTemplate = TEMPLATES.find(t => t.id === templateId)!;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,9 +51,14 @@ export default function JySerai() {
     }
   };
 
+  const getFiliereLabel = () => {
+    if (filiere === 'Autres') return filiereCustom.trim() || 'Autres';
+    return filiere;
+  };
+
   const generateCanvas = (): Promise<HTMLCanvasElement> => {
     return new Promise(async (resolve, reject) => {
-      const SIZE = 500;
+      const SIZE = 1800;
       const canvas = document.createElement('canvas');
       canvas.width = SIZE;
       canvas.height = SIZE;
@@ -47,35 +74,26 @@ export default function JySerai() {
           img.src = src;
         });
 
-      // 1. Fond
-      const bg = await loadImage('/jeftcb1.png');
+      // 1. Template de fond
+      const bg = await loadImage(activeTemplate.file);
       ctx.drawImage(bg, 0, 0, SIZE, SIZE);
 
-      // 2. Photo
+      // 2. Photo en cercle
       if (image) {
-        const px = Math.round(0.034 * SIZE);
-        const py = Math.round(0.192 * SIZE);
-        const pw = Math.round(0.398 * SIZE);
-        const ph = Math.round(0.50 * SIZE);
-        const radius = 18;
+        const { x, y, w, h } = PHOTO;
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        const r  = Math.min(w, h) / 2;
 
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(px + radius, py);
-        ctx.lineTo(px + pw - radius, py);
-        ctx.quadraticCurveTo(px + pw, py, px + pw, py + radius);
-        ctx.lineTo(px + pw, py + ph - radius);
-        ctx.quadraticCurveTo(px + pw, py + ph, px + pw - radius, py + ph);
-        ctx.lineTo(px + radius, py + ph);
-        ctx.quadraticCurveTo(px, py + ph, px, py + ph - radius);
-        ctx.lineTo(px, py + radius);
-        ctx.quadraticCurveTo(px, py, px + radius, py);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
 
         const photo = await loadImage(image);
         const photoAspect = photo.naturalWidth / photo.naturalHeight;
-        const zoneAspect = pw / ph;
+        const zoneAspect  = w / h;
         let sx = 0, sy = 0, sw = photo.naturalWidth, sh = photo.naturalHeight;
         if (photoAspect > zoneAspect) {
           sw = photo.naturalHeight * zoneAspect;
@@ -84,29 +102,44 @@ export default function JySerai() {
           sh = photo.naturalWidth / zoneAspect;
           sy = 0;
         }
-        ctx.drawImage(photo, sx, sy, sw, sh, px, py, pw, ph);
+        ctx.drawImage(photo, sx, sy, sw, sh, x, y, w, h);
         ctx.restore();
       }
 
-      // 3. Nom
-      const displayName = name.trim() || 'Votre Nom';
-      const tx = Math.round(0.02 * SIZE);
-      const ty = Math.round(0.73 * SIZE);
-      const tw = Math.round(0.94 * SIZE);
-      const th = Math.round(0.10 * SIZE);
+      const textColor = activeTemplate.textColor;
 
-      ctx.save();
-      ctx.fillStyle = 'white';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      let fontSize = 23;
-      ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-      while (ctx.measureText(displayName.toUpperCase()).width > tw - 10 && fontSize > 10) {
-        fontSize -= 1;
+      // 3. Filière
+      const filiereLabel = getFiliereLabel();
+      if (filiereLabel) {
+        const { x, y, w, h } = FILIERE_BOX;
+        ctx.save();
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        let fontSize = Math.round(h * 0.75);
         ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+        while (ctx.measureText(filiereLabel).width > w - 10 && fontSize > 12) {
+          fontSize -= 1;
+          ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+        }
+        ctx.fillText(filiereLabel, x, y + h / 2);
+        ctx.restore();
       }
-      ctx.fillText(displayName.toUpperCase(), tx + tw / 2, ty + th / 2);
+
+      // 4. Nom
+      const displayName = name.trim().toUpperCase() || 'VOTRE NOM';
+      const { x: nx, y: ny, w: nw, h: nh } = NOM_BOX;
+      ctx.save();
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      let nameFontSize = Math.round(nh * 0.8);
+      ctx.font = `900 ${nameFontSize}px "Arial Black", Arial, sans-serif`;
+      while (ctx.measureText(displayName).width > nw - 10 && nameFontSize > 12) {
+        nameFontSize -= 1;
+        ctx.font = `900 ${nameFontSize}px "Arial Black", Arial, sans-serif`;
+      }
+      ctx.fillText(displayName, nx, ny + nh / 2);
       ctx.restore();
 
       resolve(canvas);
@@ -124,10 +157,8 @@ export default function JySerai() {
       const fileName = `jef2026-${(name.trim() || 'partant').toLowerCase().replace(/\s+/g, '-')}.png`;
 
       if (isIOS()) {
-        // Sur iOS : afficher l'image inline — l'utilisateur appuie longuement pour enregistrer
         setGeneratedImage(dataUrl);
       } else {
-        // Android / Desktop : téléchargement direct via blob
         canvas.toBlob((blob) => {
           if (!blob) return;
           const blobUrl = URL.createObjectURL(blob);
@@ -150,7 +181,13 @@ export default function JySerai() {
     }
   };
 
-  const displayName = name.trim() || 'Votre Nom';
+  // Aperçu live — scale depuis 1800 vers la largeur d'affichage
+  const PREVIEW_SIZE = 500;
+  const scale = PREVIEW_SIZE / 1800;
+
+  const displayName = name.trim().toUpperCase() || 'VOTRE NOM';
+  const filiereDisplay = getFiliereLabel();
+  const textColor = activeTemplate.textColor;
 
   return (
     <main className="min-h-screen bg-gray-50 overflow-x-hidden">
@@ -174,6 +211,40 @@ export default function JySerai() {
             <h2 className="text-xl font-black text-jef-dark uppercase mb-8 tracking-tight">Personnalise ton flyer</h2>
 
             <div className="space-y-6">
+
+              {/* Choix du template */}
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-3">
+                  Choisis ton design
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {TEMPLATES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => { setTemplateId(t.id); setGeneratedImage(null); }}
+                      className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+                        templateId === t.id
+                          ? 'border-jef-green shadow-lg shadow-jef-green/20 scale-[1.02]'
+                          : 'border-gray-100 hover:border-gray-300'
+                      }`}
+                    >
+                      <img src={t.file} alt={t.label} className="w-full aspect-square object-cover" />
+                      <div className="absolute bottom-0 left-0 right-0 py-2 bg-black/40 text-white text-[10px] font-black uppercase tracking-widest text-center">
+                        {t.label}
+                      </div>
+                      {templateId === t.id && (
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-jef-green rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nom */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
                   Nom &amp; Prénom
@@ -187,6 +258,33 @@ export default function JySerai() {
                 />
               </div>
 
+              {/* Filière */}
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
+                  Filière
+                </label>
+                <select
+                  value={filiere}
+                  onChange={(e) => setFiliere(e.target.value)}
+                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-jef-dark font-bold focus:outline-none focus:ring-2 focus:ring-jef-green/40 transition-all"
+                >
+                  <option value="">-- Sélectionne ta filière --</option>
+                  {FILIERES.map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+                {filiere === 'Autres' && (
+                  <input
+                    type="text"
+                    value={filiereCustom}
+                    onChange={(e) => setFiliereCustom(e.target.value)}
+                    placeholder="Précise ta filière"
+                    className="mt-3 w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-jef-dark font-bold focus:outline-none focus:ring-2 focus:ring-jef-green/40 transition-all placeholder:font-normal placeholder:text-gray-300"
+                  />
+                )}
+              </div>
+
+              {/* Photo */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">
                   Ta Photo
@@ -215,6 +313,7 @@ export default function JySerai() {
                 </label>
               </div>
 
+              {/* Bouton télécharger */}
               <button
                 onClick={downloadVisuel}
                 disabled={isGenerating}
@@ -223,11 +322,11 @@ export default function JySerai() {
                 {isGenerating ? '⏳ Génération en cours...' : '↓ Télécharger mon visuel'}
               </button>
 
-              {/* Zone d'enregistrement iOS */}
+              {/* Zone iOS */}
               {generatedImage && (
                 <div className="rounded-2xl border-2 border-jef-green/30 bg-jef-green/5 p-4 text-center space-y-3">
                   <p className="text-jef-green text-xs font-black uppercase tracking-widest">
-                    📱 Appuie longuement sur l'image → "Enregistrer dans Photos"
+                    📱 Appuie longuement → "Enregistrer dans Photos"
                   </p>
                   <img
                     src={generatedImage}
@@ -239,22 +338,21 @@ export default function JySerai() {
               )}
 
               <p className="text-center text-[10px] text-gray-300 uppercase tracking-widest">
-                Format carré · Prêt pour Instagram &amp; WhatsApp
+                Format carré 1800×1800px · Prêt pour Instagram &amp; WhatsApp
               </p>
             </div>
           </div>
 
-          {/* APERÇU */}
+          {/* APERÇU LIVE */}
           <div className="flex flex-col items-center gap-4 order-1 lg:order-2 w-full">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Aperçu en temps réel</p>
 
-            <div className="w-full flex justify-center items-start min-h-[350px] md:min-h-[500px]">
+            <div className="w-full flex justify-center items-start">
               <div
-                ref={flyerRef}
                 style={{
                   position: 'relative',
-                  width: '500px',
-                  height: '500px',
+                  width: `${PREVIEW_SIZE}px`,
+                  height: `${PREVIEW_SIZE}px`,
                   flexShrink: 0,
                   overflow: 'hidden',
                   backgroundColor: 'white',
@@ -262,21 +360,81 @@ export default function JySerai() {
                 }}
                 className="shadow-2xl scale-[0.6] xs:scale-[0.7] sm:scale-[0.8] md:scale-100"
               >
+                {/* Template */}
                 <img
-                  src="/jeftcb1.png"
-                  alt="Template JEF 2026"
+                  src={activeTemplate.file}
+                  alt="Template"
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
                 />
+
+                {/* Photo en cercle */}
                 {image && (
-                  <div style={{ position: 'absolute', top: '19.2%', left: '3.4%', width: '39.8%', height: '50%', overflow: 'hidden', borderRadius: '18px', zIndex: 1 }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: `${PHOTO.x * scale}px`,
+                    top: `${PHOTO.y * scale}px`,
+                    width: `${PHOTO.w * scale}px`,
+                    height: `${PHOTO.h * scale}px`,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    zIndex: 1,
+                  }}>
                     <img src={image} alt="Photo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
                   </div>
                 )}
-                <div style={{ position: 'absolute', top: '73%', left: '2%', right: '4%', height: '10%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
-                  <span style={{ color: 'white', fontSize: '23px', fontWeight: '900', fontFamily: 'Arial Black, sans-serif', letterSpacing: '1px', textAlign: 'center', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+
+                {/* Filière */}
+                {filiereDisplay && (
+                  <div style={{
+                    position: 'absolute',
+                    left: `${FILIERE_BOX.x * scale}px`,
+                    top: `${FILIERE_BOX.y * scale}px`,
+                    width: `${FILIERE_BOX.w * scale}px`,
+                    height: `${FILIERE_BOX.h * scale}px`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    zIndex: 2,
+                  }}>
+                    <span style={{
+                      color: textColor,
+                      fontSize: `${FILIERE_BOX.h * scale * 0.75}px`,
+                      fontWeight: '900',
+                      fontFamily: '"Arial Black", Arial, sans-serif',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '100%',
+                    }}>
+                      {filiereDisplay}
+                    </span>
+                  </div>
+                )}
+
+                {/* Nom */}
+                <div style={{
+                  position: 'absolute',
+                  left: `${NOM_BOX.x * scale}px`,
+                  top: `${NOM_BOX.y * scale}px`,
+                  width: `${NOM_BOX.w * scale}px`,
+                  height: `${NOM_BOX.h * scale}px`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}>
+                  <span style={{
+                    color: textColor,
+                    fontSize: `${NOM_BOX.h * scale * 0.8}px`,
+                    fontWeight: '900',
+                    fontFamily: '"Arial Black", Arial, sans-serif',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
+                  }}>
                     {displayName}
                   </span>
                 </div>
+
               </div>
             </div>
           </div>
