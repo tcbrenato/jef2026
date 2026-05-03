@@ -69,10 +69,10 @@ export default function SocialProof() {
         <div className="flex gap-4 animate-scroll whitespace-nowrap">
           {repeated.map((p, i) => (
             <div key={`${p.id}-${i}`} className="flex-none">
-              <div className="bg-gray-50 border border-gray-100 px-6 py-4 rounded-2xl shadow-sm hover:border-jef-green/50 hover:shadow-md transition-all transform hover:scale-105 duration-300 flex items-center gap-4">
+              <div className="bg-gray-50 border border-gray-100 px-8 py-6 rounded-2xl shadow-sm hover:border-jef-green/50 hover:shadow-md transition-all transform hover:scale-105 duration-300 flex items-center gap-5">
                 
                 {/* Avatar */}
-                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-jef-green/10 flex items-center justify-center border-2 border-white shadow-sm">
+                <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-jef-green/10 flex items-center justify-center border-2 border-white shadow-sm">
                   {p.photo_url ? (
                     <img
                       src={p.photo_url}
@@ -80,7 +80,7 @@ export default function SocialProof() {
                       className="w-full h-full object-cover object-top"
                     />
                   ) : (
-                    <span className="text-jef-green font-black text-lg uppercase">
+                    <span className="text-jef-green font-black text-2xl uppercase">
                       {p.name.charAt(0)}
                     </span>
                   )}
@@ -88,10 +88,10 @@ export default function SocialProof() {
 
                 {/* Infos */}
                 <div>
-                  <span className="block text-jef-dark font-black uppercase text-sm tracking-tighter">
+                  <span className="block text-jef-dark font-black uppercase text-base tracking-tighter">
                     {p.name}
                   </span>
-                  <span className="block text-[9px] text-jef-green font-bold uppercase mt-0.5">
+                  <span className="block text-[11px] text-jef-green font-bold uppercase mt-1">
                     {p.filiere ? p.filiere : 'Sera présent(e)'}
                   </span>
                 </div>
