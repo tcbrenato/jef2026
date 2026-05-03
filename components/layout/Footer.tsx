@@ -46,7 +46,7 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start">
             <h4 className="font-bold text-white uppercase text-xs tracking-widest mb-6">Contact</h4>
             <p className="text-sm text-gray-300 mb-2">Université d'Abomey-Calavi</p>
-            <p className="text-sm text-gray-300 mb-6">Faculté des Lettres (FLLAC), BUE</p>
+            <p className="text-sm text-gray-300 mb-6">Faculté des Lettres, Langues, Arts et Communication (FLLAC), BUE</p>
             <div className="flex gap-4">
                <span className="text-[10px] font-black uppercase text-jef-red border border-jef-red/40 bg-jef-red/10 px-4 py-2 rounded-full shadow-lg shadow-jef-red/20">
                  BUE FLLAC Officiel
@@ -59,7 +59,7 @@ export default function Footer() {
         {/* Bas du Footer : Déjà configuré pour être centré sur mobile et justify-between sur desktop */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">
-            © {currentYear} JEF FLLAC - Tous droits réservés.
+            © {currentYear} JEF 2026 / BUE FLLAC - Tous droits réservés.
           </p>
           <p className="text-gray-400 text-[9px] font-bold uppercase tracking-widest">
             Développé par <span className="text-white">Rénato TCHOBO</span>

@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { Menu, X, Ticket } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { scrollYProgress } = useScroll();
-  const x = useTransform(scrollYProgress, [0, 1], [0, 80]);
+  
+  // Effet subtil sur le logo au scroll
+  const scale = useTransform(scrollYProgress, [0, 0.1], [1, 0.9]);
 
   const navLinks = [
     { name: 'Accueil', href: '/' },
@@ -17,68 +19,95 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 w-full z-[100] bg-white border-b border-gray-100 shadow-sm">
+    <header className="fixed top-0 w-full z-[100] bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Hauteur réduite : h-16 (64px) sur mobile, h-24 sur desktop */}
-        <div className="flex justify-between items-center h-16 md:h-24">
+        <div className="flex justify-between items-center h-16 md:h-20">
           
           {/* LOGO */}
           <Link href="/" className="relative flex items-center">
-            <motion.div style={{ x }} className="relative">
+            <motion.div style={{ scale }} className="flex items-center">
               <img 
                 src="/logojeff.png" 
                 alt="Logo JEF" 
-                className="h-10 md:h-16 w-auto object-contain" 
+                className="h-12 md:h-16 w-auto object-contain" 
               />
             </motion.div>
           </Link>
 
           {/* DESKTOP NAV */}
-          <nav className="hidden md:flex space-x-6 items-center">
+          <nav className="hidden md:flex space-x-8 items-center">
             {navLinks.map((link) => (
               <Link 
                 key={link.name} 
                 href={link.href} 
-                className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-jef-green transition-colors"
+                className="text-[11px] font-bold uppercase tracking-tighter text-gray-600 hover:text-[#2f8b09] transition-colors"
               >
                 {link.name}
               </Link>
             ))}
+            
+            {/* BOUTON TICKET CTA */}
             <Link 
-              href="/contact" 
-              className="bg-jef-red text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest"
+              href="/boutique" 
+              className="bg-[#2f8b09] text-white px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#246d07] transition-all shadow-md hover:shadow-[#2f8b09]/20"
             >
-              Tickets
+              <Ticket size={14} />
+              Prendre mon Ticket
             </Link>
           </nav>
 
           {/* MOBILE BUTTON */}
-          <div className="md:hidden">
-            <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-jef-dark">
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+          <div className="md:hidden flex items-center gap-4">
+             <Link 
+              href="/boutique" 
+              className="bg-[#2f8b09] p-2 rounded-full text-white shadow-lg"
+            >
+              <Ticket size={20} />
+            </Link>
+            <button 
+              onClick={() => setIsOpen(!isOpen)} 
+              className="p-2 text-gray-900 transition-transform active:scale-90"
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* MOBILE MENU - S'ajuste au h-16 du header */}
-      <div className={`
-        fixed inset-0 top-16 bg-white z-[110] transition-all duration-300 md:hidden
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-      `}>
-        <nav className="flex flex-col p-6 space-y-6 text-center">
-          {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
-              href={link.href}
-              onClick={() => setIsOpen(false)}
-              className="text-2xl font-black uppercase text-jef-dark border-b border-gray-50 pb-4"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
-      </div>
+      {/* MOBILE MENU */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 top-16 bg-white z-[110] md:hidden"
+          >
+            <nav className="flex flex-col p-8 space-y-8 h-full">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.name} 
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="text-3xl font-black uppercase text-gray-900 border-b border-gray-50 pb-4 flex justify-between items-center"
+                >
+                  {link.name}
+                  <span className="text-[#2f8b09] text-sm">→</span>
+                </Link>
+              ))}
+              
+              <Link 
+                href="/boutique"
+                onClick={() => setIsOpen(false)}
+                className="mt-auto bg-[#2f8b09] text-white w-full py-5 rounded-2xl text-center font-black uppercase text-lg flex items-center justify-center gap-3"
+              >
+                <Ticket size={24} />
+                Acheter mon Pass
+              </Link>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

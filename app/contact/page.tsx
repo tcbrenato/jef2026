@@ -1,5 +1,7 @@
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+import Image from 'next/image';
+import { TicketBooking } from '../../components/sections/TicketBooking';
 
 const phones = [
   { label: '0167 40 40 84', href: 'tel:+22967404084' },
@@ -21,29 +23,37 @@ export default function Contact() {
       <div className="pt-32 pb-20 max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
-          {/* GAUCHE : INFOS & CONTACT */}
+          {/* GAUCHE */}
           <div>
             <h1 className="text-5xl font-black text-jef-dark uppercase mb-6 leading-none">
               Préparez <br /> <span className="text-jef-red">votre départ</span>
             </h1>
             <p className="text-gray-500 text-lg mb-10 max-w-md">
-              Les billets seront bientôt disponibles. Restez connectés pour l'annonce du tarif et de la destination surprise.
+              Les billets sont disponibles. Réservez votre place dès maintenant avant rupture de stock.
             </p>
 
-            {/* État Billetterie */}
+            {/* Ticket */}
             <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 mb-8">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-3 h-3 bg-jef-red rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Statut : Bientôt disponible</span>
+              <div className="relative w-full rounded-2xl overflow-hidden mb-6 shadow-md">
+                <Image
+                  src="/ticketjef.png"
+                  alt="Ticket JEF 2026"
+                  width={600}
+                  height={300}
+                  className="w-full object-cover"
+                />
               </div>
-              <h3 className="text-xl font-bold text-jef-dark mb-2">Ticket Standard JEF 2026</h3>
-              <p className="text-sm text-gray-500 mb-6">Inclus : Transport AR, Accès sites, Ambiance plage & Sécurité.</p>
-              <button disabled className="w-full py-4 bg-gray-200 text-gray-400 rounded-xl font-bold uppercase tracking-widest cursor-not-allowed">
-                Vente fermée
-              </button>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-bold text-jef-dark">Ticket Standard JEF 2026</h3>
+                <span className="text-2xl font-black text-jef-red">6 000 F</span>
+              </div>
+              <p className="text-sm text-gray-500 mb-2">
+                Inclus : Transport AR, Escale Ouidah, Vibes Grand-Popo, Restauration, Face Painting.
+              </p>
+              <TicketBooking price={6000} whatsapp="22995754733" />
             </div>
 
-            {/* Numéros de téléphone */}
+            {/* Téléphone */}
             <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 mb-6">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 bg-jef-dark rounded-lg flex items-center justify-center">
@@ -136,14 +146,12 @@ export default function Contact() {
               </button>
             </form>
 
-            {/* Séparateur */}
             <div className="flex items-center gap-4 my-8">
               <div className="flex-1 h-px bg-white/10"></div>
               <span className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">ou contactez-nous directement</span>
               <div className="flex-1 h-px bg-white/10"></div>
             </div>
 
-            {/* Raccourcis WhatsApp dans la colonne droite */}
             <div className="grid grid-cols-3 gap-3">
               {whatsapps.map(({ label, href }) => (
                 <a
