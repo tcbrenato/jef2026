@@ -141,42 +141,24 @@ export default function JySerai() {
     try {
       let photoUrl: string | null = null;
 
+      // Upload photo originale (base64 → blob sans fetch)
       if (image) {
-        console.log('1. Image présente, début conversion...');
         const mimeType = image.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
         const ext = mimeType === 'image/png' ? '.png' : '.jpg';
         const photoBlob = base64ToBlob(image, mimeType);
-        console.log('2. Blob créé, taille:', photoBlob.size);
-        
         const photoFileName = fileName.replace('.png', '-photo' + ext);
-        console.log('3. Upload vers:', photoFileName);
-        
-        const { data, error: uploadError } = await supabase.storage
+
+        const { error: uploadError } = await supabase.storage
           .from('gallery')
           .upload(photoFileName, photoBlob, { contentType: mimeType, upsert: false });
-
-        console.log('4. Résultat upload:', data, uploadError);
 
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(photoFileName);
           photoUrl = urlData.publicUrl;
-          console.log('5. Photo URL:', photoUrl);
+        } else {
+          console.error('Photo upload error:', uploadError);
         }
       }
-
-      const { error: insertError } = await supabase.from('participants').insert({
-        name: name.trim() || 'Anonyme',
-        filiere: getFiliereLabel(),
-        photo_url: photoUrl,
-      });
-
-      console.log('6. Insert result:', insertError);
-      if (!insertError) setSaved(true);
-
-    } catch (err) {
-      console.error('Erreur Supabase :', err);
-    }
-  };
 
       // Upload visuel généré
       await supabase.storage
