@@ -10,11 +10,21 @@ function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  const base64Data = base64.split(',')[1];
+  const byteCharacters = atob(base64Data);
+  const byteNumbers = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  return new Blob([byteNumbers], { type: mimeType });
+}
+
 const FILIERES = ['DSLC', 'Anglais', 'Allemand', 'Lettres Modernes', 'Espagnol', 'Autres'];
 
 const TEMPLATES = [
-  { id: 1, file: '/templatejef1.png', label: 'Fond Vert',   textColor: '#FFFFFF' },
-  { id: 2, file: '/templatejef2.png', label: 'Fond Blanc',  textColor: '#2f8b09' },
+  { id: 1, file: '/templatejef1.png', label: 'Fond Vert',  textColor: '#FFFFFF' },
+  { id: 2, file: '/templatejef2.png', label: 'Fond Blanc', textColor: '#2f8b09' },
 ];
 
 const PHOTO       = { x: 71.1,  y: 526.5,  w: 747,   h: 747  };
@@ -129,36 +139,44 @@ export default function JySerai() {
 
   const saveToSupabase = async (blob: Blob, fileName: string) => {
     try {
-      // 1. Upload photo originale dans le bucket gallery
       let photoUrl: string | null = null;
+
+      // Upload photo originale (base64 → blob sans fetch)
       if (image) {
-        // Convertir base64 en blob pour upload de la photo de profil
-        const res = await fetch(image);
-        const photoBlob = await res.blob();
-        const photoFileName = fileName.replace('.png', '-photo.jpg');
+        const mimeType = image.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+        const ext = mimeType === 'image/png' ? '.png' : '.jpg';
+        const photoBlob = base64ToBlob(image, mimeType);
+        const photoFileName = fileName.replace('.png', '-photo' + ext);
+
         const { error: uploadError } = await supabase.storage
           .from('gallery')
-          .upload(photoFileName, photoBlob, { contentType: 'image/jpeg', upsert: false });
+          .upload(photoFileName, photoBlob, { contentType: mimeType, upsert: false });
 
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(photoFileName);
           photoUrl = urlData.publicUrl;
+        } else {
+          console.error('Photo upload error:', uploadError);
         }
       }
 
-      // 2. Upload du visuel généré
+      // Upload visuel généré
       await supabase.storage
         .from('gallery')
         .upload(fileName, blob, { contentType: 'image/png', upsert: false });
 
-      // 3. Insérer dans la table participants
-      await supabase.from('participants').insert({
+      // Insert dans participants
+      const { error: insertError } = await supabase.from('participants').insert({
         name: name.trim() || 'Anonyme',
         filiere: getFiliereLabel(),
         photo_url: photoUrl,
       });
 
-      setSaved(true);
+      if (insertError) {
+        console.error('Insert error:', insertError);
+      } else {
+        setSaved(true);
+      }
     } catch (err) {
       console.error('Erreur Supabase :', err);
     }
@@ -177,7 +195,6 @@ export default function JySerai() {
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
-        // Sauvegarde Supabase en arrière-plan
         saveToSupabase(blob, fileName);
 
         if (isIOS()) {
@@ -230,7 +247,6 @@ export default function JySerai() {
 
             <div className="space-y-6">
 
-              {/* Templates */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-3">Choisis ton design</label>
                 <div className="grid grid-cols-2 gap-3">
@@ -260,7 +276,6 @@ export default function JySerai() {
                 </div>
               </div>
 
-              {/* Nom */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">Nom &amp; Prénom</label>
                 <input
@@ -272,7 +287,6 @@ export default function JySerai() {
                 />
               </div>
 
-              {/* Filière */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">Filière</label>
                 <select
@@ -296,7 +310,6 @@ export default function JySerai() {
                 )}
               </div>
 
-              {/* Photo */}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 mb-2">Ta Photo</label>
                 <label className="flex flex-col items-center justify-center w-full h-40 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-jef-green/40 hover:bg-jef-green/5 transition-all group">
@@ -323,7 +336,6 @@ export default function JySerai() {
                 </label>
               </div>
 
-              {/* Bouton */}
               <button
                 onClick={downloadVisuel}
                 disabled={isGenerating}
@@ -332,7 +344,6 @@ export default function JySerai() {
                 {isGenerating ? '⏳ Génération en cours...' : '↓ Télécharger mon visuel'}
               </button>
 
-              {/* Confirmation */}
               {saved && (
                 <div className="flex items-center gap-3 p-4 bg-jef-green/10 border border-jef-green/20 rounded-2xl">
                   <div className="w-8 h-8 bg-jef-green rounded-full flex items-center justify-center flex-shrink-0">
@@ -347,7 +358,6 @@ export default function JySerai() {
                 </div>
               )}
 
-              {/* Zone iOS */}
               {generatedImage && (
                 <div className="rounded-2xl border-2 border-jef-green/30 bg-jef-green/5 p-4 text-center space-y-3">
                   <p className="text-jef-green text-xs font-black uppercase tracking-widest">
